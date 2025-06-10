@@ -3,9 +3,9 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { Platform, View } from 'react-native';
+import { Platform, View, Dimensions } from 'react-native';
 
 // Import screens
 import DashboardScreen from './src/screens/coach/DashboardScreen';
@@ -32,6 +32,18 @@ const CustomAddButton = () => (
 );
 
 function MainTabs() {
+  const insets = useSafeAreaInsets();
+  const { height: screenHeight } = Dimensions.get('window');
+  
+  // Calculate safe bottom padding for modern devices
+  const bottomSafeArea = insets.bottom;
+  const isModernDevice = Platform.OS === 'ios' && screenHeight >= 812; // iPhone X and newer
+  const hasGestureNavigation = Platform.OS === 'android' && Platform.Version >= 29;
+  
+  // Dynamic height based on device
+  const tabBarHeight = 63 + bottomSafeArea;
+  const tabBarPaddingBottom = bottomSafeArea > 0 ? bottomSafeArea : 8;
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -63,17 +75,22 @@ function MainTabs() {
         tabBarInactiveTintColor: '#6B7280',
         headerShown: false,
         tabBarStyle: {
-          height: 63,
-          paddingBottom: 8,
+          height: tabBarHeight,
+          paddingBottom: tabBarPaddingBottom,
           paddingTop: 8,
           backgroundColor: '#FFFFFF',
           borderTopWidth: 0,
           elevation: 0,
           shadowOpacity: 0,
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
         },
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '400',
+          marginBottom: bottomSafeArea > 0 ? 4 : 0,
         }
       })}
     >
