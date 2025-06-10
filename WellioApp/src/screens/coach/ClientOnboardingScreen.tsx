@@ -134,7 +134,7 @@ const ClientOnboardingScreen: React.FC<ClientOnboardingScreenProps> = ({ navigat
       [
         {
           text: 'OK',
-          onPress: () => navigation.navigate('Clients'),
+          onPress: () => navigation.navigate('MainTabs', { screen: 'Clients' }),
         },
       ]
     );
