@@ -10,6 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import {
   colors,
   typography,
@@ -21,53 +22,54 @@ import {
   getSafeAreaTop,
 } from '../../theme';
 
-// Icons (placeholder for actual icon library)
+// Header Icons
 const ArrowLeftIcon = () => (
-  <View style={{ width: 14, height: 16, backgroundColor: colors.primary }} />
+  <Ionicons name="chevron-back" size={20} color={colors.primary} />
 );
 
 const SearchIcon = () => (
-  <View style={{ width: 16, height: 16, backgroundColor: colors.primary }} />
+  <Ionicons name="search" size={20} color={colors.primary} />
 );
 
 const BellIcon = () => (
-  <View style={{ width: 14, height: 16, backgroundColor: colors.primary }} />
+  <Ionicons name="notifications-outline" size={20} color={colors.primary} />
 );
 
+// Action Icons
 const MessageIcon = () => (
-  <View style={{ width: 12, height: 12, backgroundColor: colors.textTertiary }} />
+  <Ionicons name="chatbubble-outline" size={14} color={colors.textTertiary} />
 );
 
 const ScheduleIcon = () => (
-  <View style={{ width: 10.5, height: 12, backgroundColor: colors.textTertiary }} />
+  <Ionicons name="calendar-outline" size={14} color={colors.textTertiary} />
 );
 
 const ProfileIcon = () => (
-  <View style={{ width: 10.5, height: 12, backgroundColor: colors.primary }} />
+  <Ionicons name="person-outline" size={14} color={colors.primary} />
 );
 
 const MenuIcon = () => (
-  <View style={{ width: 4, height: 16, backgroundColor: colors.gray400 }} />
+  <Ionicons name="ellipsis-vertical" size={16} color={colors.gray400} />
 );
 
 const SortIcon = () => (
-  <View style={{ width: 15.75, height: 14, backgroundColor: colors.textTertiary }} />
+  <Ionicons name="swap-vertical" size={16} color={colors.textTertiary} />
 );
 
 const GridIcon = () => (
-  <View style={{ width: 14, height: 14, backgroundColor: colors.textTertiary }} />
+  <Ionicons name="grid-outline" size={16} color={colors.textTertiary} />
 );
 
 const AddIcon = () => (
-  <View style={{ width: 20, height: 16, backgroundColor: colors.primary }} />
+  <Ionicons name="add" size={20} color={colors.primary} />
 );
 
 const ImportIcon = () => (
-  <View style={{ width: 16, height: 16, backgroundColor: colors.primary }} />
+  <Ionicons name="download-outline" size={16} color={colors.primary} />
 );
 
 const GroupIcon = () => (
-  <View style={{ width: 20, height: 16, backgroundColor: colors.primary }} />
+  <Ionicons name="people-outline" size={16} color={colors.primary} />
 );
 
 // Types
