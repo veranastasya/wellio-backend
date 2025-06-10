@@ -247,12 +247,12 @@ const ClientsScreen = () => {
   const renderClientCard = ({ item }: { item: Client }) => (
     <View style={styles.clientCard}>
       <View style={styles.clientCardHeader}>
-        <View style={styles.clientInfo}>
+      <View style={styles.clientInfo}>
           <View style={styles.clientAvatar}>
             <View style={commonStyles.avatarLarge} />
           </View>
           <View style={styles.clientDetails}>
-            <Text style={styles.clientName}>{item.name}</Text>
+        <Text style={styles.clientName}>{item.name}</Text>
             <Text style={styles.clientJoinedDate}>Joined: {item.joinedDate}</Text>
             <View style={styles.clientMeta}>
               <View style={styles.programTag}>
@@ -335,7 +335,7 @@ const ClientsScreen = () => {
               onPress={() => setShowActionSheet(false)}
             >
               <Text style={styles.actionSheetSecondaryButtonText}>Cancel</Text>
-            </TouchableOpacity>
+    </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -350,14 +350,14 @@ const ClientsScreen = () => {
       
       <View style={styles.clientListContainer}>
         {renderClientListHeader()}
-        <FlatList
+      <FlatList
           data={CLIENTS}
           renderItem={renderClientCard}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.clientList}
-        />
-      </View>
+      />
+    </View>
 
       <TouchableOpacity
         style={styles.floatingActionButton}
