@@ -59,13 +59,16 @@ const DashboardScreen = ({ navigation }: any) => {
             <Text style={styles.statNumber}>12</Text>
             <Text style={styles.statLabel}>New Insights</Text>
           </View>
-          <View style={styles.statCard}>
+          <TouchableOpacity 
+            style={styles.statCard}
+            onPress={() => navigation.navigate('MainTabs', { screen: 'Chat' })}
+          >
             <View style={styles.statIconContainer}>
               <Text style={styles.statIcon}>💬</Text>
             </View>
             <Text style={styles.statNumber}>9</Text>
             <Text style={styles.statLabel}>Unread Messages</Text>
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -99,7 +102,14 @@ const DashboardScreen = ({ navigation }: any) => {
               <Text style={styles.actionIcon}>📹</Text>
               <Text style={styles.actionText}>Join</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton}>
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => navigation.navigate('ChatRoom', { 
+                clientName: 'Emma Johnson',
+                clientId: '1',
+                clientAvatar: 'https://via.placeholder.com/48x48'
+              })}
+            >
               <Text style={styles.actionIcon}>💬</Text>
               <Text style={styles.actionText}>Message</Text>
             </TouchableOpacity>
@@ -127,7 +137,14 @@ const DashboardScreen = ({ navigation }: any) => {
               <Text style={styles.actionIcon}>📹</Text>
               <Text style={styles.actionText}>Join</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton}>
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => navigation.navigate('ChatRoom', { 
+                clientName: 'David Chen',
+                clientId: '2',
+                clientAvatar: 'https://via.placeholder.com/48x48'
+              })}
+            >
               <Text style={styles.actionIcon}>💬</Text>
               <Text style={styles.actionText}>Message</Text>
             </TouchableOpacity>
