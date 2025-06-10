@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, Platform }
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, commonStyles, spacing, borderRadius, shadows, typography, deviceInfo, safeArea, touchTargets } from '../../theme';
 
-const DashboardScreen = () => {
+const DashboardScreen = ({ navigation }: any) => {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -139,7 +139,10 @@ const DashboardScreen = () => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Client Onboarding</Text>
         <View style={styles.onboardingCard}>
-          <TouchableOpacity style={styles.primaryOnboardingButton}>
+          <TouchableOpacity 
+            style={styles.primaryOnboardingButton}
+            onPress={() => navigation.navigate('ClientOnboarding')}
+          >
             <Text style={styles.onboardingIcon}>👤</Text>
             <Text style={styles.primaryButtonText}>Add Client Manually</Text>
             <Text style={styles.chevronIcon}>›</Text>

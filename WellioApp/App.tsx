@@ -5,20 +5,43 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { Platform, View, Dimensions } from 'react-native';
+import { Platform, View, Dimensions, TouchableOpacity, Alert } from 'react-native';
 
 // Import screens
 import DashboardScreen from './src/screens/coach/DashboardScreen';
 import ClientsScreen from './src/screens/coach/ClientsScreen';
 import MessagesScreen from './src/screens/coach/MessagesScreen';
 import AnalyticsScreen from './src/screens/coach/AnalyticsScreen';
+import ClientOnboardingScreen from './src/screens/coach/ClientOnboardingScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+// Handle Add button press
+const handleAddPress = (navigation: any) => {
+  Alert.alert(
+    'Add Client',
+    'Choose how you would like to add a new client:',
+    [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Add Manually',
+        onPress: () => navigation.navigate('ClientOnboarding'),
+      },
+      {
+        text: 'Send Questionnaire',
+        onPress: () => Alert.alert('Coming Soon', 'Questionnaire feature will be available soon!'),
+      },
+    ]
+  );
+};
+
 // Custom center button component
-const CustomAddButton = () => (
-  <View style={{
+const CustomAddButton = ({ onPress }: { onPress: () => void }) => (
+  <TouchableOpacity onPress={onPress} style={{
     width: 48,
     height: 48,
     borderRadius: 24,
@@ -28,10 +51,10 @@ const CustomAddButton = () => (
     marginTop: -8, // Slight elevation
   }}>
     <Ionicons name="add" size={24} color="#FFFFFF" />
-  </View>
+  </TouchableOpacity>
 );
 
-function MainTabs() {
+function MainTabs({ navigation }: any) {
   const insets = useSafeAreaInsets();
   const { height: screenHeight } = Dimensions.get('window');
   
@@ -58,7 +81,7 @@ function MainTabs() {
               iconName = 'people-outline';
               break;
             case 'Add':
-              return <CustomAddButton />;
+              return <CustomAddButton onPress={() => handleAddPress(navigation)} />;
             case 'Chat':
               iconName = 'chatbubble-outline';
               break;
@@ -120,6 +143,7 @@ export default function App() {
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="MainTabs" component={MainTabs} />
+          <Stack.Screen name="ClientOnboarding" component={ClientOnboardingScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
