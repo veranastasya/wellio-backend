@@ -13,6 +13,7 @@ import ClientsScreen from './src/screens/coach/ClientsScreen';
 import MessagesScreen from './src/screens/coach/MessagesScreen';
 import AnalyticsScreen from './src/screens/coach/AnalyticsScreen';
 import ClientOnboardingScreen from './src/screens/coach/ClientOnboardingScreen';
+import ChatScreen from './src/screens/coach/ChatScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -144,6 +145,7 @@ export default function App() {
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="MainTabs" component={MainTabs} />
           <Stack.Screen name="ClientOnboarding" component={ClientOnboardingScreen} />
+          <Stack.Screen name="ChatRoom" component={ChatScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

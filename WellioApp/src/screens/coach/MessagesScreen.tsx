@@ -91,7 +91,7 @@ const RECENT_CONVERSATIONS: Message[] = [
   },
 ];
 
-const MessagesScreen = () => {
+const MessagesScreen = ({ navigation }: any) => {
   const [searchText, setSearchText] = useState('');
 
   const renderHeader = () => (
@@ -140,7 +140,14 @@ const MessagesScreen = () => {
   );
 
   const renderMessageItem = ({ item, showBadge = false }: { item: Message; showBadge?: boolean }) => (
-    <TouchableOpacity style={styles.messageCard}>
+    <TouchableOpacity 
+      style={styles.messageCard}
+      onPress={() => navigation.navigate('ChatRoom', {
+        clientName: item.name,
+        clientAvatar: item.avatar,
+        isOnline: true,
+      })}
+    >
       <View style={styles.messageContent}>
         <View style={styles.avatarContainer}>
           <View style={styles.avatar} />
