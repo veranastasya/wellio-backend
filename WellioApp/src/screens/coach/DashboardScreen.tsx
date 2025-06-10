@@ -1,12 +1,14 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { colors, commonStyles, spacing, borderRadius, shadows, typography } from '../../theme';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors, commonStyles, spacing, borderRadius, shadows, typography, deviceInfo, safeArea, touchTargets } from '../../theme';
 
 const DashboardScreen = () => {
   return (
-    <ScrollView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <View style={styles.header}>
         <View style={styles.headerContent}>
           <Text style={styles.brandName}>Wellio</Text>
           <View style={styles.headerRight}>
@@ -236,11 +238,16 @@ const DashboardScreen = () => {
           </View>
         </View>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -257,7 +264,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: spacing.sm,
+    marginTop: deviceInfo.hasNotch ? spacing.xs : spacing.sm,
   },
   brandName: {
     fontSize: typography.fontSize.xl,
@@ -271,8 +278,8 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   notificationButton: {
-    width: 30,
-    height: 32,
+    width: Math.max(32, touchTargets.small),
+    height: Math.max(32, touchTargets.small),
     backgroundColor: colors.secondaryLight,
     borderRadius: borderRadius.full,
     justifyContent: 'center',
@@ -282,8 +289,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   avatar: {
-    width: 32,
-    height: 32,
+    width: deviceInfo.isSmallDevice ? 28 : 32,
+    height: deviceInfo.isSmallDevice ? 28 : 32,
     borderRadius: borderRadius.full,
     borderWidth: 2,
     borderColor: colors.primary,

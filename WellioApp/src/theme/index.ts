@@ -1,4 +1,28 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions, Platform, StatusBar } from 'react-native';
+
+// Get device dimensions for responsive design
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+
+// Device detection for responsive features
+export const deviceInfo = {
+  screenWidth,
+  screenHeight,
+  isSmallDevice: screenWidth < 375, // iPhone SE, small Android
+  isMediumDevice: screenWidth >= 375 && screenWidth < 414, // iPhone 12/13/14
+  isLargeDevice: screenWidth >= 414, // iPhone 14 Pro Max, large Android
+  isIOS: Platform.OS === 'ios',
+  isAndroid: Platform.OS === 'android',
+  hasNotch: Platform.OS === 'ios' && screenHeight >= 812, // iPhone X and newer
+  statusBarHeight: Platform.OS === 'ios' ? (screenHeight >= 812 ? 44 : 20) : StatusBar.currentHeight || 0,
+};
+
+// Dynamic spacing that adapts to screen size
+const getResponsiveSpacing = () => {
+  const baseSpacing = 16;
+  if (deviceInfo.isSmallDevice) return Math.round(baseSpacing * 0.875); // 14px
+  if (deviceInfo.isLargeDevice) return Math.round(baseSpacing * 1.125); // 18px
+  return baseSpacing; // 16px
+};
 
 // Color Palette
 export const colors = {
@@ -49,20 +73,28 @@ export const colors = {
   borderLight: '#E5E7EB',
 };
 
-// Typography
+// Responsive Typography
 export const typography = {
-  fontFamily: 'Inter', // Primary font family
-  fontFamilyAlt: 'Roboto', // Alternative font family
+  fontFamily: Platform.select({
+    ios: 'Inter',
+    android: 'Inter',
+    default: 'System',
+  }),
+  fontFamilyAlt: Platform.select({
+    ios: 'Roboto', 
+    android: 'Roboto',
+    default: 'System',
+  }),
   
-  // Font Sizes
+  // Responsive Font Sizes
   fontSize: {
-    xs: 12,
-    sm: 14,
-    base: 16,
-    lg: 18,
-    xl: 20,
-    '2xl': 24,
-    '3xl': 32,
+    xs: deviceInfo.isSmallDevice ? 11 : 12,
+    sm: deviceInfo.isSmallDevice ? 13 : 14,
+    base: deviceInfo.isSmallDevice ? 15 : 16,
+    lg: deviceInfo.isSmallDevice ? 17 : 18,
+    xl: deviceInfo.isSmallDevice ? 19 : 20,
+    '2xl': deviceInfo.isSmallDevice ? 22 : 24,
+    '3xl': deviceInfo.isSmallDevice ? 28 : 32,
   },
   
   // Font Weights
@@ -81,59 +113,118 @@ export const typography = {
   },
 };
 
-// Spacing
+// Responsive Spacing
 export const spacing = {
-  xs: 4,
-  sm: 8,
-  md: 12,
-  base: 16,
-  lg: 20,
-  xl: 24,
-  '2xl': 32,
-  '3xl': 48,
-  '4xl': 64,
+  xs: Math.round(getResponsiveSpacing() * 0.25), // ~4px
+  sm: Math.round(getResponsiveSpacing() * 0.5),  // ~8px
+  md: Math.round(getResponsiveSpacing() * 0.75), // ~12px
+  base: getResponsiveSpacing(),                  // 14-18px
+  lg: Math.round(getResponsiveSpacing() * 1.25), // ~20px
+  xl: Math.round(getResponsiveSpacing() * 1.5),  // ~24px
+  '2xl': Math.round(getResponsiveSpacing() * 2), // ~32px
+  '3xl': Math.round(getResponsiveSpacing() * 3), // ~48px
+  '4xl': Math.round(getResponsiveSpacing() * 4), // ~64px
 };
 
-// Border Radius
+// Responsive Border Radius
 export const borderRadius = {
   sm: 4,
-  base: 8,
-  md: 12,
-  lg: 16,
-  xl: 24,
+  base: deviceInfo.isSmallDevice ? 6 : 8,
+  md: deviceInfo.isSmallDevice ? 10 : 12,
+  lg: deviceInfo.isSmallDevice ? 14 : 16,
+  xl: deviceInfo.isSmallDevice ? 20 : 24,
   full: 9999,
 };
 
-// Shadows
+// Platform-specific Shadows
 export const shadows = {
-  sm: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  base: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  md: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  lg: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4,
-  },
+  sm: Platform.select({
+    ios: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+    },
+    android: {
+      elevation: 1,
+    },
+    default: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+      elevation: 1,
+    },
+  }),
+  base: Platform.select({
+    ios: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+    },
+    android: {
+      elevation: 2,
+    },
+    default: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 2,
+    },
+  }),
+  md: Platform.select({
+    ios: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+    },
+    android: {
+      elevation: 3,
+    },
+    default: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+  }),
+  lg: Platform.select({
+    ios: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.1,
+      shadowRadius: 6,
+    },
+    android: {
+      elevation: 4,
+    },
+    default: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.1,
+      shadowRadius: 6,
+      elevation: 4,
+    },
+  }),
+};
+
+// Safe area constants for modern devices
+export const safeArea = {
+  top: deviceInfo.hasNotch ? 44 : (deviceInfo.isIOS ? 20 : 0),
+  bottom: deviceInfo.hasNotch ? 34 : 0,
+  left: 0,
+  right: 0,
+};
+
+// Accessibility-compliant touch targets
+export const touchTargets = {
+  small: Math.max(36, spacing.base * 2.25), // Minimum for accessibility
+  medium: Math.max(44, spacing.base * 2.75), // Apple's recommended
+  large: Math.max(48, spacing.base * 3), // Material Design minimum
 };
 
 // Common Styles
@@ -164,11 +255,12 @@ export const commonStyles = StyleSheet.create({
     ...shadows.sm,
   },
   
-  // Headers
+  // Headers with safe area support
   header: {
     backgroundColor: colors.white,
     paddingHorizontal: spacing.base,
     paddingVertical: spacing.sm,
+    paddingTop: Math.max(spacing.sm, safeArea.top + spacing.xs),
     ...shadows.sm,
   },
   
@@ -221,12 +313,13 @@ export const commonStyles = StyleSheet.create({
     fontFamily: typography.fontFamily,
   },
   
-  // Buttons
+  // Buttons with proper touch targets
   buttonPrimary: {
     backgroundColor: colors.primary,
     borderRadius: borderRadius.base,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
+    minHeight: touchTargets.medium,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -236,6 +329,7 @@ export const commonStyles = StyleSheet.create({
     borderRadius: borderRadius.base,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
+    minHeight: touchTargets.medium,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -245,6 +339,7 @@ export const commonStyles = StyleSheet.create({
     borderRadius: borderRadius.base,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
+    minHeight: touchTargets.medium,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -402,4 +497,27 @@ export const createScreenStyles = (customStyles: any = {}) => {
     },
     ...customStyles,
   });
+};
+
+// Utility functions for responsive design
+export const getResponsiveSize = (size: number) => {
+  if (deviceInfo.isSmallDevice) return Math.round(size * 0.9);
+  if (deviceInfo.isLargeDevice) return Math.round(size * 1.1);
+  return size;
+};
+
+export const isIPhoneWithNotch = () => {
+  return deviceInfo.hasNotch;
+};
+
+export const getStatusBarHeight = () => {
+  return deviceInfo.statusBarHeight;
+};
+
+export const getSafeAreaTop = () => {
+  return safeArea.top;
+};
+
+export const getSafeAreaBottom = () => {
+  return safeArea.bottom;
 }; 

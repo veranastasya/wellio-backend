@@ -4,6 +4,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import { Platform } from 'react-native';
 
 // Import screens
 import DashboardScreen from './src/screens/coach/DashboardScreen';
@@ -76,6 +78,11 @@ function MainTabs() {
 export default function App() {
   return (
     <SafeAreaProvider>
+      <StatusBar 
+        style="dark" 
+        backgroundColor="#FFFFFF"
+        translucent={Platform.OS === 'android'}
+      />
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="MainTabs" component={MainTabs} />
