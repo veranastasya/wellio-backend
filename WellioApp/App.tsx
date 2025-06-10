@@ -5,7 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 
 // Import screens
 import DashboardScreen from './src/screens/coach/DashboardScreen';
@@ -16,6 +16,21 @@ import AnalyticsScreen from './src/screens/coach/AnalyticsScreen';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+// Custom center button component
+const CustomAddButton = () => (
+  <View style={{
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#28A0AE',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: -8, // Slight elevation
+  }}>
+    <Ionicons name="add" size={24} color="#FFFFFF" />
+  </View>
+);
+
 function MainTabs() {
   return (
     <Tab.Navigator
@@ -25,38 +40,40 @@ function MainTabs() {
 
           switch (route.name) {
             case 'Home':
-              iconName = focused ? 'home' : 'home-outline';
+              iconName = 'home-outline';
               break;
             case 'Clients':
-              iconName = focused ? 'people' : 'people-outline';
+              iconName = 'people-outline';
               break;
             case 'Add':
-              iconName = 'add-circle';
-              color = '#4A90E2';
-              size = 48;
-              break;
-            case 'Messages':
-              iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
+              return <CustomAddButton />;
+            case 'Chat':
+              iconName = 'chatbubble-outline';
               break;
             case 'Analytics':
-              iconName = focused ? 'stats-chart' : 'stats-chart-outline';
+              iconName = 'stats-chart-outline';
               break;
             default:
               iconName = 'help-outline';
           }
 
-          return <Ionicons name={iconName as any} size={size} color={color} />;
+          return <Ionicons name={iconName as any} size={24} color={color} />;
         },
-        tabBarActiveTintColor: '#4A90E2',
-        tabBarInactiveTintColor: '#666',
+        tabBarActiveTintColor: '#28A0AE',
+        tabBarInactiveTintColor: '#6B7280',
         headerShown: false,
         tabBarStyle: {
-          height: 60,
+          height: 63,
           paddingBottom: 8,
           paddingTop: 8,
+          backgroundColor: '#FFFFFF',
+          borderTopWidth: 0,
+          elevation: 0,
+          shadowOpacity: 0,
         },
         tabBarLabelStyle: {
           fontSize: 12,
+          fontWeight: '400',
         }
       })}
     >
@@ -69,7 +86,7 @@ function MainTabs() {
           tabBarLabel: () => null,
         }}
       />
-      <Tab.Screen name="Messages" component={MessagesScreen} />
+      <Tab.Screen name="Chat" component={MessagesScreen} />
       <Tab.Screen name="Analytics" component={AnalyticsScreen} />
     </Tab.Navigator>
   );
