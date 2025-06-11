@@ -164,7 +164,10 @@ const DashboardScreen = ({ navigation }: any) => {
             <Text style={styles.primaryButtonText}>Add Client Manually</Text>
             <Text style={styles.chevronIcon}>›</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.secondaryOnboardingButton}>
+          <TouchableOpacity 
+            style={styles.secondaryOnboardingButton}
+            onPress={() => navigation.navigate('Questionnaire')}
+          >
             <Text style={styles.onboardingIcon}>📝</Text>
             <Text style={styles.secondaryButtonText}>Send Questionnaire</Text>
             <Text style={styles.chevronIcon}>›</Text>

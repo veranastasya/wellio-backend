@@ -14,6 +14,7 @@ import MessagesScreen from './src/screens/coach/MessagesScreen';
 import AnalyticsScreen from './src/screens/coach/AnalyticsScreen';
 import ClientOnboardingScreen from './src/screens/coach/ClientOnboardingScreen';
 import ChatScreen from './src/screens/coach/ChatScreen';
+import QuestionnaireScreen from './src/screens/coach/QuestionnaireScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -34,7 +35,7 @@ const handleAddPress = (navigation: any) => {
       },
       {
         text: 'Send Questionnaire',
-        onPress: () => Alert.alert('Coming Soon', 'Questionnaire feature will be available soon!'),
+        onPress: () => navigation.navigate('Questionnaire'),
       },
     ]
   );
@@ -146,6 +147,7 @@ export default function App() {
           <Stack.Screen name="MainTabs" component={MainTabs} />
           <Stack.Screen name="ClientOnboarding" component={ClientOnboardingScreen} />
           <Stack.Screen name="ChatRoom" component={ChatScreen} />
+          <Stack.Screen name="Questionnaire" component={QuestionnaireScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
