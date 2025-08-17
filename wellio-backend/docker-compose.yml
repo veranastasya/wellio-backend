@@ -11,17 +11,38 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3000
+      - CORE_API_URL=http://core:4000
       - AUTH_SERVICE_URL=http://auth:4001
       - CHAT_SERVICE_URL=http://chat:4002
-      - ANALYTICS_SERVICE_URL=http://analytics:4003
-      - NOTIFICATIONS_SERVICE_URL=http://notifications:4004
-      - AI_SERVICE_URL=http://ai:8001
-      - FRONTEND_URL=http://localhost:3000
+      - FRONTEND_URL=http://localhost:5173
     depends_on:
+      - core
       - auth
       - chat
-      - analytics
-      - notifications
+    networks:
+      - wellio-network
+
+  # Core API Service
+  core:
+    build:
+      context: ./core
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/wellio_core
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - CORS_ORIGIN=http://localhost:5173
+      - AI_SERVICE_URL=http://ai:8001
+      - CHAT_SERVICE_URL=http://chat:4002
+      - AUTH_SERVICE_URL=http://auth:4001
+      - WORKER_URL=http://worker:7000
+    depends_on:
+      - postgres
+      - redis
     networks:
       - wellio-network
 
@@ -60,35 +81,34 @@ services:
     networks:
       - wellio-network
 
-  # Analytics Service
-  analytics:
+  # AI Service
+  ai:
     build:
-      context: ./services/analytics
+      context: ./ai
       dockerfile: Dockerfile
     ports:
-      - "4003:4003"
+      - "8001:8001"
     environment:
       - NODE_ENV=development
-      - PORT=4003
-      - DATABASE_URL=postgresql://postgres:password@postgres:5432/wellio_analytics
-    depends_on:
-      - postgres
+      - PORT=8001
     networks:
       - wellio-network
 
-  # Notifications Service
-  notifications:
+  # Worker Service
+  worker:
     build:
-      context: ./services/notifications
+      context: ./worker
       dockerfile: Dockerfile
     ports:
-      - "4004:4004"
+      - "7000:7000"
     environment:
       - NODE_ENV=development
-      - PORT=4004
+      - PORT=7000
       - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/wellio_core
     depends_on:
       - redis
+      - postgres
     networks:
       - wellio-network
 
@@ -104,6 +124,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./services/auth/src/config/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./core/schema.sql:/docker-entrypoint-initdb.d/02-core-schema.sql
     networks:
       - wellio-network
 
@@ -114,14 +135,6 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    networks:
-      - wellio-network
-
-  # AI Service (placeholder - you can add your AI service here)
-  ai:
-    image: nginx:alpine
-    ports:
-      - "8001:80"
     networks:
       - wellio-network
 

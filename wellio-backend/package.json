@@ -4,13 +4,13 @@
   "description": "Wellio Backend - Microservices Architecture for Wellness Coaching Platform",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently \"npm run auth:dev\" \"npm run api:dev\" \"npm run chat:dev\" \"npm run analytics:dev\" \"npm run notifications:dev\"",
+    "dev": "concurrently \"npm run gateway:dev\" \"npm run core:dev\" \"npm run auth:dev\" \"npm run chat:dev\"",
+    "gateway:dev": "cd services/api-gateway && npm run dev",
+    "core:dev": "cd core && npm run dev",
     "auth:dev": "cd services/auth && npm run dev",
-    "api:dev": "cd services/api-gateway && npm run dev",
     "chat:dev": "cd services/chat && npm run dev",
-    "analytics:dev": "cd services/analytics && npm run dev",
-    "notifications:dev": "cd services/notifications && npm run dev",
-    "install:all": "npm install && cd services/auth && npm install && cd ../api-gateway && npm install && cd ../chat && npm install && cd ../analytics && npm install && cd ../notifications && npm install",
+    "install:all": "npm install && cd core && npm install && cd ../services/auth && npm install && cd ../api-gateway && npm install && cd ../chat && npm install",
+    "build:sdk": "cd core && npm run build:sdk",
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
@@ -31,6 +31,7 @@
     "dotenv": "^16.0.0"
   },
   "workspaces": [
+    "core",
     "services/*"
   ]
 }

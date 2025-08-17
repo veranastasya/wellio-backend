@@ -1,0 +1,1097 @@
+openapi: 3.0.3
+info:
+  title: Wellio Core API
+  description: Core API for the Wellio wellness coaching platform
+  version: 1.0.0
+  contact:
+    name: Wellio Team
+    email: api@wellio.com
+
+servers:
+  - url: http://localhost:4000
+    description: Development server
+  - url: https://api.wellio.com
+    description: Production server
+
+security:
+  - BearerAuth: []
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Service health status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/v1/me:
+    get:
+      summary: Get current user profile
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    $ref: '#/components/schemas/User'
+    patch:
+      summary: Update current user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /api/v1/home/summary:
+    get:
+      summary: Get home dashboard summary
+      responses:
+        '200':
+          description: Home summary data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    $ref: '#/components/schemas/HomeSummary'
+
+  /api/v1/clients:
+    get:
+      summary: Get clients list
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: service
+          in: query
+          schema:
+            type: string
+        - name: query
+          in: query
+          schema:
+            type: string
+        - name: sort
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Clients list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    $ref: '#/components/schemas/PaginatedResponse'
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Client'
+    post:
+      summary: Create a new client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateClient'
+      responses:
+        '201':
+          description: Client created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Client'
+
+  /api/v1/clients/facets:
+    get:
+      summary: Get client facets for filtering
+      responses:
+        '200':
+          description: Client facets
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      services:
+                        type: array
+                        items:
+                          type: string
+                      statuses:
+                        type: array
+                        items:
+                          type: string
+
+  /api/v1/clients/{id}:
+    get:
+      summary: Get client by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Client details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Client'
+    patch:
+      summary: Update client
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateClient'
+      responses:
+        '200':
+          description: Client updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Client'
+
+  /api/v1/sessions:
+    get:
+      summary: Get sessions list
+      parameters:
+        - name: when
+          in: query
+          schema:
+            type: string
+            enum: [today, tomorrow, this_week, next_week]
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: client_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Sessions list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Session'
+    post:
+      summary: Create a new session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSession'
+      responses:
+        '201':
+          description: Session created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Session'
+
+  /api/v1/sessions/{id}:
+    get:
+      summary: Get session by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Session details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Session'
+    patch:
+      summary: Update session
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSession'
+      responses:
+        '200':
+          description: Session updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Session'
+
+  /api/v1/sessions/{id}/join:
+    post:
+      summary: Join a session
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Session join details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      join_url:
+                        type: string
+                        format: uri
+                      session_id:
+                        type: string
+                        format: uuid
+
+  /api/v1/insights:
+    get:
+      summary: Get insights
+      parameters:
+        - name: scope
+          in: query
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Insights list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Insight'
+
+  /api/v1/insights/clients:
+    get:
+      summary: Get client insights
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Client insights
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Insight'
+
+  /api/v1/analytics/summary:
+    get:
+      summary: Get analytics summary
+      parameters:
+        - name: range
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [this_week, this_month, this_quarter, this_year]
+      responses:
+        '200':
+          description: Analytics summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      total_revenue:
+                        type: number
+                      active_clients:
+                        type: integer
+                      avg_session_duration:
+                        type: number
+                      client_retention_rate:
+                        type: number
+
+  /api/v1/predictions/churn:
+    get:
+      summary: Get churn predictions
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 5
+      responses:
+        '200':
+          description: Churn predictions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        client_id:
+                          type: string
+                          format: uuid
+                        risk_score:
+                          type: number
+                        reason:
+                          type: string
+
+  /api/v1/analytics/optimal-scheduling:
+    get:
+      summary: Get optimal scheduling recommendations
+      responses:
+        '200':
+          description: Optimal scheduling data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      recommended_times:
+                        type: array
+                        items:
+                          type: string
+                      best_days:
+                        type: array
+                        items:
+                          type: string
+
+  /api/v1/analytics/revenue-forecast:
+    get:
+      summary: Get revenue forecast
+      parameters:
+        - name: range
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: '^\d+[dwmy]$'
+      responses:
+        '200':
+          description: Revenue forecast
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      projected_revenue:
+                        type: number
+                      growth_rate:
+                        type: number
+                      confidence_interval:
+                        type: array
+                        items:
+                          type: number
+
+  /api/v1/analytics/export:
+    get:
+      summary: Export analytics data
+      parameters:
+        - name: range
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [csv, json, xlsx]
+            default: csv
+      responses:
+        '200':
+          description: Exported data
+          content:
+            text/csv:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: object
+
+  /api/v1/uploads:
+    post:
+      summary: Upload a file
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UploadResponse'
+
+  /api/v1/search:
+    get:
+      summary: Search across clients, conversations, and sessions
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [clients, conversations, sessions]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      clients:
+                        type: array
+                        items:
+                          type: object
+                      conversations:
+                        type: array
+                        items:
+                          type: object
+                      sessions:
+                        type: array
+                        items:
+                          type: object
+
+  /api/v1/notifications:
+    get:
+      summary: Get notifications
+      parameters:
+        - name: unread
+          in: query
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Notifications list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    $ref: '#/components/schemas/PaginatedResponse'
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Notification'
+
+  /api/v1/notifications/{id}/read:
+    post:
+      summary: Mark notification as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /api/v1/onboarding/questionnaires/send:
+    post:
+      summary: Send onboarding questionnaire
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionnaireSend'
+      responses:
+        '200':
+          description: Questionnaire sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /api/v1/integrations/mfp/connect:
+    post:
+      summary: Connect MyFitnessPal integration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IntegrationConnect'
+      responses:
+        '200':
+          description: MFP connected successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /api/v1/integrations/fatsecret/connect:
+    post:
+      summary: Connect FatSecret integration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IntegrationConnect'
+      responses:
+        '200':
+          description: FatSecret connected successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /api/v1/integrations/mfp/webhook:
+    post:
+      summary: MyFitnessPal webhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Webhook processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /api/v1/integrations/fatsecret/webhook:
+    post:
+      summary: FatSecret webhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Webhook processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /api/v1/data-imports/manual:
+    post:
+      summary: Create manual data import
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataImport'
+      responses:
+        '200':
+          description: Data import created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /api/v1/data-imports/status:
+    get:
+      summary: Get data import status
+      parameters:
+        - name: client_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Import status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                      progress:
+                        type: number
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        service:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        version:
+          type: string
+
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+        message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+
+    PaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+            page_size:
+              type: integer
+            total:
+              type: integer
+            total_pages:
+              type: integer
+            has_next:
+              type: boolean
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          type: string
+          enum: [coach, client]
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+
+    HomeSummary:
+      type: object
+      properties:
+        total_clients:
+          type: integer
+        active_sessions:
+          type: integer
+        unread_messages:
+          type: integer
+        pending_tasks:
+          type: integer
+
+    Client:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        full_name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        services:
+          type: array
+          items:
+            type: string
+        attention_status:
+          type: string
+          enum: [on_track, needs_attention]
+        joined_at:
+          type: string
+          format: date-time
+        next_session_at:
+          type: string
+          format: date-time
+          nullable: true
+        tags:
+          type: object
+
+    CreateClient:
+      type: object
+      required:
+        - full_name
+        - email
+      properties:
+        full_name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        services:
+          type: array
+          items:
+            type: string
+        attention_status:
+          type: string
+          enum: [on_track, needs_attention]
+        tags:
+          type: object
+
+    UpdateClient:
+      type: object
+      properties:
+        full_name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        services:
+          type: array
+          items:
+            type: string
+        attention_status:
+          type: string
+          enum: [on_track, needs_attention]
+        tags:
+          type: object
+
+    Session:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        client_id:
+          type: string
+          format: uuid
+        service:
+          type: string
+        start_at:
+          type: string
+          format: date-time
+        duration_min:
+          type: integer
+        status:
+          type: string
+          enum: [scheduled, completed, canceled]
+        join_url:
+          type: string
+          format: uri
+          nullable: true
+
+    CreateSession:
+      type: object
+      required:
+        - client_id
+        - service
+        - start_at
+        - duration_min
+      properties:
+        client_id:
+          type: string
+          format: uuid
+        service:
+          type: string
+        start_at:
+          type: string
+          format: date-time
+        duration_min:
+          type: integer
+        status:
+          type: string
+          enum: [scheduled, completed, canceled]
+
+    UpdateSession:
+      type: object
+      properties:
+        service:
+          type: string
+        start_at:
+          type: string
+          format: date-time
+        duration_min:
+          type: integer
+        status:
+          type: string
+          enum: [scheduled, completed, canceled]
+
+    Insight:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [retention_opportunity, progress_trend, client_insight]
+        payload:
+          type: object
+        created_at:
+          type: string
+          format: date-time
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [message, session, reminder, insight, system]
+        payload:
+          type: object
+        read_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    UploadResponse:
+      type: object
+      properties:
+        file_id:
+          type: string
+          format: uuid
+        filename:
+          type: string
+        size:
+          type: integer
+        url:
+          type: string
+          format: uri
+
+    QuestionnaireSend:
+      type: object
+      required:
+        - client_id
+        - questionnaire_id
+      properties:
+        client_id:
+          type: string
+          format: uuid
+        questionnaire_id:
+          type: string
+          format: uuid
+
+    IntegrationConnect:
+      type: object
+      required:
+        - client_id
+        - access_token
+      properties:
+        client_id:
+          type: string
+          format: uuid
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+
+    DataImport:
+      type: object
+      required:
+        - client_id
+        - type
+        - file_id
+      properties:
+        client_id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [manual, mfp, fatsecret]
+        file_id:
+          type: string
+          format: uuid
