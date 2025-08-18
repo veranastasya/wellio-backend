@@ -3,13 +3,17 @@
   "version": "1.0.0",
   "description": "Wellio Backend - Microservices Architecture for Wellness Coaching Platform",
   "main": "index.js",
+  "private": true,
+  "engines": {
+    "node": ">=20 <21"
+  },
   "scripts": {
     "dev": "concurrently \"npm run gateway:dev\" \"npm run core:dev\" \"npm run auth:dev\" \"npm run chat:dev\"",
     "gateway:dev": "cd services/api-gateway && npm run dev",
     "core:dev": "cd core && npm run dev",
     "auth:dev": "cd services/auth && npm run dev",
     "chat:dev": "cd services/chat && npm run dev",
-    "install:all": "npm install && cd core && npm install && cd ../services/auth && npm install && cd ../api-gateway && npm install && cd ../chat && npm install",
+    "install:all": "npm install --workspaces",
     "build:sdk": "cd core && npm run build:sdk",
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up -d",
