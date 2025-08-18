@@ -1,13 +1,30 @@
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { 
-  Client, 
-  CreateClient, 
-  UpdateClient, 
-  ClientFilters,
-  PaginatedResponse 
-} from '@wellio/shared';
+import { z } from 'zod';
+import { ClientSchema, ClientDTO } from '@wellio/shared';
 import { logger } from '../../common/logger';
+
+// Define types locally for now
+type Client = z.infer<typeof ClientSchema>;
+type CreateClient = Omit<Client, 'id' | 'joined_at'>;
+type UpdateClient = Partial<Omit<Client, 'id' | 'joined_at'>>;
+type ClientFilters = {
+  query?: string;
+  status?: string;
+  service?: string;
+  page?: number;
+  page_size?: number;
+};
+type PaginatedResponse<T> = {
+  data: T[];
+  pagination: {
+    page: number;
+    page_size: number;
+    total: number;
+    total_pages: number;
+    has_next: boolean;
+  };
+};
 
 // Mock data - in production this would come from database
 const mockClients: Client[] = [

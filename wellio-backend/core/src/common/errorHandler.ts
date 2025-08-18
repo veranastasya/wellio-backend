@@ -1,6 +1,21 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from './logger';
-import { ErrorResponse, ErrorCodes } from '@wellio/shared';
+
+interface ErrorResponse {
+  error: {
+    code: string;
+    message: string;
+    details?: Record<string, any>;
+  };
+}
+
+const ErrorCodes = {
+  INTERNAL_ERROR: 'INTERNAL_ERROR',
+  VALIDATION_ERROR: 'VALIDATION_ERROR',
+  NOT_FOUND: 'NOT_FOUND',
+  UNAUTHORIZED: 'UNAUTHORIZED',
+  FORBIDDEN: 'FORBIDDEN'
+} as const;
 
 export interface AppError extends Error {
   statusCode?: number;

@@ -5,7 +5,7 @@
   "main": "index.js",
   "private": true,
   "engines": {
-    "node": ">=20 <21"
+    "node": ">=18 <21"
   },
   "scripts": {
     "dev": "concurrently \"npm run gateway:dev\" \"npm run core:dev\" \"npm run auth:dev\" \"npm run chat:dev\"",
@@ -14,6 +14,8 @@
     "auth:dev": "cd services/auth && npm run dev",
     "chat:dev": "cd services/chat && npm run dev",
     "install:all": "npm install --workspaces",
+    "build": "npm run -w @wellio/shared build",
+    "dev:core": "npm run -w @wellio/shared build && npm run -w @wellio/core-api dev",
     "build:sdk": "cd core && npm run build:sdk",
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up -d",
@@ -36,6 +38,7 @@
   },
   "workspaces": [
     "core",
-    "services/*"
+    "services/*",
+    "packages/shared"
   ]
 }

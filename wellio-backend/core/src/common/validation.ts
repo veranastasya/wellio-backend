@@ -1,7 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { AnyZodObject, ZodError } from 'zod';
 import { createError } from './errorHandler';
-import { ErrorCodes } from '@wellio/shared';
+
+const ErrorCodes = {
+  VALIDATION_ERROR: 'VALIDATION_ERROR'
+} as const;
 
 export const validateRequest = (schema: AnyZodObject) => {
   return async (req: Request, res: Response, next: NextFunction) => {

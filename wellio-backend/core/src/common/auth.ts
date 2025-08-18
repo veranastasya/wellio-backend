@@ -1,7 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { createError } from './errorHandler';
-import { ErrorCodes } from '@wellio/shared';
+
+const ErrorCodes = {
+  UNAUTHORIZED: 'UNAUTHORIZED'
+} as const;
 
 interface JwtPayload {
   id: string;

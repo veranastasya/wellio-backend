@@ -13,6 +13,7 @@
     "build:sdk": "openapi-generator-cli generate -i ./openapi.yaml -g typescript-fetch -o ./sdk --skip-validate-spec"
   },
   "dependencies": {
+    "@wellio/shared": "file:../packages/shared",
     "express": "^4.18.2",
     "cors": "^2.8.5",
     "helmet": "^7.1.0",

@@ -24,7 +24,13 @@ import { logger } from './common/logger';
 import { errorHandler } from './common/errorHandler';
 import { authMiddleware } from './common/auth';
 import { validateRequest } from './common/validation';
-import { HealthResponse } from '@wellio/shared';
+
+interface HealthResponse {
+  ok: boolean;
+  service: string;
+  timestamp: string;
+  version: string;
+}
 
 dotenv.config();
 
