@@ -17,7 +17,7 @@ import {
 const router = Router();
 
 // GET /api/v1/sessions
-router.get('/', validateRequest(SessionFiltersSchema), getSessions);
+router.get('/', getSessions);
 
 // GET /api/v1/sessions/:id
 router.get('/:id', getSession);
@@ -29,6 +29,6 @@ router.post('/', validateRequest(CreateSessionSchema), createSession);
 router.patch('/:id', validateRequest(UpdateSessionSchema), updateSession);
 
 // POST /api/v1/sessions/:id/join
-router.post('/:id/join', validateRequest(SessionJoinSchema), joinSession);
+router.post('/:id/join', joinSession);
 
 export { router as sessionsRouter };

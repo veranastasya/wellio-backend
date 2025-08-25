@@ -2,6 +2,9 @@ import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import { logger } from './utils/logger';
 
+// WebSocket proxy to chat service
+const CHAT_SERVICE_URL = process.env.CHAT_SERVICE_URL || 'http://localhost:4002';
+
 export const setupWebSocket = (io: Server) => {
   // Authentication middleware for WebSocket
   io.use((socket, next) => {
@@ -40,9 +43,10 @@ export const setupWebSocket = (io: Server) => {
       socket.join('clients');
     }
 
-    // Handle chat messages
+    // Handle chat messages - proxy to chat service
     socket.on('send_message', (data) => {
-      // Broadcast to conversation participants
+      // TODO: Proxy to chat service WebSocket
+      // For now, broadcast to conversation participants
       socket.to(`conversation:${data.conversationId}`).emit('new_message', data);
     });
 

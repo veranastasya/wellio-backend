@@ -1,10 +1,10 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
-import dotenv from 'dotenv';
 import { v4 as uuidv4 } from 'uuid';
 
 // Import modules
@@ -22,7 +22,7 @@ import { searchRouter } from './modules/search';
 // Import common utilities
 import { logger } from './common/logger';
 import { errorHandler } from './common/errorHandler';
-import { authMiddleware } from './common/auth';
+import { requireAuth } from './common/auth';
 import { validateRequest } from './common/validation';
 
 interface HealthResponse {
@@ -31,8 +31,6 @@ interface HealthResponse {
   timestamp: string;
   version: string;
 }
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -79,20 +77,23 @@ app.get('/health', (req, res) => {
   res.json(response);
 });
 
+// Protected API v1 routes
+app.use('/api/v1', requireAuth);
+
 // API v1 routes
-app.use('/api/v1/home', authMiddleware, homeRouter);
-app.use('/api/v1/clients', authMiddleware, clientsRouter);
-app.use('/api/v1/sessions', authMiddleware, sessionsRouter);
-app.use('/api/v1/insights', authMiddleware, insightsRouter);
-app.use('/api/v1/analytics', authMiddleware, analyticsRouter);
-app.use('/api/v1/onboarding', authMiddleware, onboardingRouter);
-app.use('/api/v1/uploads', authMiddleware, uploadsRouter);
-app.use('/api/v1/integrations', authMiddleware, integrationsRouter);
-app.use('/api/v1/notifications', authMiddleware, notificationsRouter);
-app.use('/api/v1/search', authMiddleware, searchRouter);
+app.use('/api/v1/home', homeRouter);
+app.use('/api/v1/clients', clientsRouter);
+app.use('/api/v1/sessions', sessionsRouter);
+app.use('/api/v1/insights', insightsRouter);
+app.use('/api/v1/analytics', analyticsRouter);
+app.use('/api/v1/onboarding', onboardingRouter);
+app.use('/api/v1/uploads', uploadsRouter);
+app.use('/api/v1/integrations', integrationsRouter);
+app.use('/api/v1/notifications', notificationsRouter);
+app.use('/api/v1/search', searchRouter);
 
 // User profile routes
-app.get('/api/v1/me', authMiddleware, (req, res) => {
+app.get('/api/v1/me', (req, res) => {
   res.json({
     success: true,
     data: {
@@ -104,7 +105,7 @@ app.get('/api/v1/me', authMiddleware, (req, res) => {
   });
 });
 
-app.patch('/api/v1/me', authMiddleware, validateRequest, (req, res) => {
+app.patch('/api/v1/me', validateRequest, (req, res) => {
   // TODO: Implement user profile update
   res.json({
     success: true,
@@ -126,9 +127,44 @@ app.use('*', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  logger.info(`Core API running on port ${PORT}`);
-  logger.info(`Health check available at http://localhost:${PORT}/health`);
-});
+async function startServer() {
+  try {
+    // Seed data on startup
+    const { getRepo } = await import('./data/repo');
+    const { buildMemorySeed } = await import('./seed/memorySeed');
+    
+    const repo = await getRepo();
+    await repo.clearAll();
+    
+    const data = buildMemorySeed();
+    await repo.seed({
+      coaches: [data.coach],
+      clients: data.clients,
+      sessions: data.sessions,
+      conversations: data.conversations,
+      messages: data.messages,
+      insights: data.insights
+    });
+    
+    console.log('[core] Seeded with demo data');
+    
+    app.listen(PORT, () => {
+      logger.info(`Core API running on port ${PORT}`);
+      logger.info(`Health check available at http://localhost:${PORT}/health`);
+      
+      // Log JWT configuration
+      console.log('[core] JWT cfg', {
+        iss: process.env.AUTH_ISSUER,
+        aud: process.env.AUTH_AUDIENCE,
+        hasSecret: !!process.env.JWT_SECRET
+      });
+    });
+  } catch (error) {
+    logger.error('Failed to start Core API:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
 
 export default app;

@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -7,14 +8,11 @@ import rateLimit from 'express-rate-limit';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import dotenv from 'dotenv';
 import { logger } from './utils/logger';
 import { authMiddleware } from './middleware/auth';
 import { errorHandler } from './middleware/errorHandler';
 import { validateRequest } from './middleware/validation';
 import { setupWebSocket } from './websocket';
-
-dotenv.config();
 
 const app = express();
 const server = createServer(app);
@@ -73,7 +71,7 @@ app.use('/api/v1/auth', createProxyMiddleware({
   target: AUTH_SERVICE_URL,
   changeOrigin: true,
   pathRewrite: {
-    '^/api/v1/auth': '/auth'
+    '^/api/v1/auth': '/api/v1/auth'
   },
   onError: (err, req, res) => {
     logger.error('Auth service error:', err);

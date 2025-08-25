@@ -16,7 +16,7 @@ import {
 const router = Router();
 
 // GET /api/v1/clients
-router.get('/', validateRequest(ClientFiltersSchema), getClients);
+router.get('/', getClients);
 
 // GET /api/v1/clients/facets
 router.get('/facets', getClientFacets);

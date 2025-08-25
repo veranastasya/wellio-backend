@@ -6,7 +6,7 @@ import { InsightFiltersSchema } from '@wellio/shared';
 const router = Router();
 
 // GET /api/v1/insights
-router.get('/', validateRequest(InsightFiltersSchema), getInsights);
+router.get('/', getInsights);
 
 // GET /api/v1/insights/clients
 router.get('/clients', getInsights);

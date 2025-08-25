@@ -2,18 +2,73 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import pool from '../config/database';
-import redisClient from '../config/redis';
+import { getCache } from '../lib/cache';
 import { logger } from '../utils/logger';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret_change_in_production';
 const JWT_EXPIRES_IN = '24h';
 const REFRESH_TOKEN_EXPIRES_IN = '7d';
+
+// Helper function to sign access tokens
+const signAccessToken = (payload: { id: string; email: string; role: string }) => {
+  return jwt.sign(payload, JWT_SECRET, {
+    algorithm: 'HS256',
+    issuer: process.env.AUTH_ISSUER || 'wellio-auth',
+    audience: process.env.AUTH_AUDIENCE || 'wellio-api',
+    expiresIn: JWT_EXPIRES_IN
+  });
+};
 
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
-    // Find user by email
+    // Dev mode: return fake token without database
+    if (process.env.AUTH_DEV_MODE === 'true') {
+      console.log(`[auth] DEV MODE: Login attempt for ${email}`);
+      
+      const fakeUser = {
+        id: 'dev-user-id',
+        email: email,
+        name: 'Dev User',
+        role: 'user',
+        created_at: new Date().toISOString()
+      };
+
+      const issuer = process.env.AUTH_ISSUER || 'wellio-auth';
+      const audience = process.env.AUTH_AUDIENCE || 'wellio-api';
+
+      const accessToken = signAccessToken({
+        id: fakeUser.id,
+        email: fakeUser.email,
+        role: fakeUser.role
+      });
+
+      const refreshToken = jwt.sign(
+        { id: fakeUser.id },
+        JWT_SECRET,
+        { 
+          expiresIn: REFRESH_TOKEN_EXPIRES_IN,
+          issuer: issuer,
+          algorithm: 'HS256'
+        }
+      );
+
+      // Store refresh token in cache
+      const cache = await getCache();
+      await cache.set(`refresh_token:${fakeUser.id}`, refreshToken, { ttlSec: 7 * 24 * 60 * 60 });
+
+      return res.json({
+        success: true,
+        data: {
+          user: fakeUser,
+          access_token: accessToken,
+          refreshToken
+        }
+      });
+    }
+
+    // Production mode: use database
     const result = await pool.query(
       'SELECT * FROM users WHERE email = $1',
       [email]
@@ -39,20 +94,33 @@ export const login = async (req: Request, res: Response) => {
     }
 
     // Generate tokens
+    const issuer = process.env.AUTH_ISSUER || 'wellio-auth';
+    const audience = process.env.AUTH_AUDIENCE || 'wellio-api';
+
     const accessToken = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
+      { 
+        expiresIn: JWT_EXPIRES_IN,
+        issuer: issuer,
+        audience: audience,
+        algorithm: 'HS256'
+      }
     );
 
     const refreshToken = jwt.sign(
       { id: user.id },
       JWT_SECRET,
-      { expiresIn: REFRESH_TOKEN_EXPIRES_IN }
+      { 
+        expiresIn: REFRESH_TOKEN_EXPIRES_IN,
+        issuer: issuer,
+        algorithm: 'HS256'
+      }
     );
 
-    // Store refresh token in Redis
-    await redisClient.setEx(`refresh_token:${user.id}`, 7 * 24 * 60 * 60, refreshToken);
+    // Store refresh token in cache
+    const cache = await getCache();
+    await cache.set(`refresh_token:${user.id}`, refreshToken, { ttlSec: 7 * 24 * 60 * 60 });
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
@@ -61,7 +129,7 @@ export const login = async (req: Request, res: Response) => {
       success: true,
       data: {
         user: userWithoutPassword,
-        token: accessToken,
+        access_token: accessToken,
         refreshToken
       }
     });
@@ -104,26 +172,32 @@ export const register = async (req: Request, res: Response) => {
     const user = result.rows[0];
 
     // Generate tokens
-    const accessToken = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
-    );
+    const accessToken = signAccessToken({
+      id: user.id,
+      email: user.email,
+      role: user.role
+    });
 
+    const issuer = process.env.AUTH_ISSUER || 'wellio-auth';
     const refreshToken = jwt.sign(
       { id: user.id },
       JWT_SECRET,
-      { expiresIn: REFRESH_TOKEN_EXPIRES_IN }
+      { 
+        expiresIn: REFRESH_TOKEN_EXPIRES_IN,
+        issuer: issuer,
+        algorithm: 'HS256'
+      }
     );
 
-    // Store refresh token in Redis
-    await redisClient.setEx(`refresh_token:${user.id}`, 7 * 24 * 60 * 60, refreshToken);
+    // Store refresh token in cache
+    const cache = await getCache();
+    await cache.set(`refresh_token:${user.id}`, refreshToken, { ttlSec: 7 * 24 * 60 * 60 });
 
     res.status(201).json({
       success: true,
       data: {
         user,
-        token: accessToken,
+        access_token: accessToken,
         refreshToken
       }
     });
@@ -142,7 +216,8 @@ export const logout = async (req: Request, res: Response) => {
     
     if (token) {
       const decoded = jwt.verify(token, JWT_SECRET) as any;
-      await redisClient.del(`refresh_token:${decoded.id}`);
+      const cache = await getCache();
+      await cache.del(`refresh_token:${decoded.id}`);
     }
 
     res.json({
@@ -170,7 +245,8 @@ export const refreshToken = async (req: Request, res: Response) => {
     }
 
     const decoded = jwt.verify(refreshToken, JWT_SECRET) as any;
-    const storedToken = await redisClient.get(`refresh_token:${decoded.id}`);
+    const cache = await getCache();
+    const storedToken = await cache.get(`refresh_token:${decoded.id}`);
 
     if (!storedToken || storedToken !== refreshToken) {
       return res.status(401).json({
@@ -195,20 +271,32 @@ export const refreshToken = async (req: Request, res: Response) => {
     }
 
     // Generate new tokens
+    const issuer = process.env.AUTH_ISSUER || 'wellio-auth';
+    const audience = process.env.AUTH_AUDIENCE || 'wellio-api';
+
     const newAccessToken = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
+      { 
+        expiresIn: JWT_EXPIRES_IN,
+        issuer: issuer,
+        audience: audience,
+        algorithm: 'HS256'
+      }
     );
 
     const newRefreshToken = jwt.sign(
       { id: user.id },
       JWT_SECRET,
-      { expiresIn: REFRESH_TOKEN_EXPIRES_IN }
+      { 
+        expiresIn: REFRESH_TOKEN_EXPIRES_IN,
+        issuer: issuer,
+        algorithm: 'HS256'
+      }
     );
 
-    // Update refresh token in Redis
-    await redisClient.setEx(`refresh_token:${user.id}`, 7 * 24 * 60 * 60, newRefreshToken);
+    // Update refresh token in cache
+    await cache.set(`refresh_token:${user.id}`, newRefreshToken, { ttlSec: 7 * 24 * 60 * 60 });
 
     res.json({
       success: true,
@@ -251,8 +339,9 @@ export const forgotPassword = async (req: Request, res: Response) => {
       { expiresIn: '1h' }
     );
 
-    // Store reset token in Redis
-    await redisClient.setEx(`reset_token:${user.id}`, 3600, resetToken);
+    // Store reset token in cache
+    const cache = await getCache();
+    await cache.set(`reset_token:${user.id}`, resetToken, { ttlSec: 3600 });
 
     // TODO: Send email with reset link
     // For now, just return the token
@@ -275,7 +364,8 @@ export const resetPassword = async (req: Request, res: Response) => {
     const { token, newPassword } = req.body;
 
     const decoded = jwt.verify(token, JWT_SECRET) as any;
-    const storedToken = await redisClient.get(`reset_token:${decoded.id}`);
+    const cache = await getCache();
+    const storedToken = await cache.get(`reset_token:${decoded.id}`);
 
     if (!storedToken || storedToken !== token) {
       return res.status(401).json({
@@ -295,7 +385,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     );
 
     // Remove reset token
-    await redisClient.del(`reset_token:${decoded.id}`);
+    await cache.del(`reset_token:${decoded.id}`);
 
     res.json({
       success: true,

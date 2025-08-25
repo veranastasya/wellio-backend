@@ -1,116 +1,29 @@
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { 
-  Session, 
-  CreateSession, 
-  UpdateSession, 
-  SessionFilters,
-  PaginatedResponse 
-} from '@wellio/shared';
 import { logger } from '../../common/logger';
-
-// Mock data - in production this would come from database
-const mockSessions: Session[] = [
-  {
-    id: '660e8400-e29b-41d4-a716-446655440001',
-    client_id: '550e8400-e29b-41d4-a716-446655440001',
-    service: 'nutrition',
-    start_at: '2024-02-01T14:00:00Z',
-    duration_min: 60,
-    status: 'scheduled',
-    join_url: 'https://meet.google.com/abc-defg-hij'
-  },
-  {
-    id: '660e8400-e29b-41d4-a716-446655440002',
-    client_id: '550e8400-e29b-41d4-a716-446655440002',
-    service: 'fitness',
-    start_at: '2024-01-30T10:00:00Z',
-    duration_min: 45,
-    status: 'completed',
-    join_url: null
-  },
-  {
-    id: '660e8400-e29b-41d4-a716-446655440003',
-    client_id: '550e8400-e29b-41d4-a716-446655440003',
-    service: 'wellness',
-    start_at: '2024-01-30T16:00:00Z',
-    duration_min: 30,
-    status: 'scheduled',
-    join_url: 'https://meet.google.com/xyz-uvw-rst'
-  }
-];
+import { getRepo } from '../../data/repo';
+import { Session } from '../../data/store';
 
 export const getSessions = async (req: Request, res: Response) => {
   try {
-    const filters = req.query as unknown as SessionFilters;
+    const filters = req.query as any;
     logger.info('Getting sessions', { userId: req.user?.id, filters });
 
-    let filteredSessions = [...mockSessions];
+    const repo = await getRepo();
+    const when = filters.when === 'today' ? 'today' : undefined;
+    const limit = filters.limit ? Number(filters.limit) : undefined;
+    
+    const items = await repo.listSessions({ when, limit });
 
-    // Apply filters
-    if (filters.when) {
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-
-      switch (filters.when) {
-        case 'today':
-          filteredSessions = filteredSessions.filter(session => {
-            const sessionDate = new Date(session.start_at);
-            return sessionDate >= today && sessionDate < tomorrow;
-          });
-          break;
-        case 'tomorrow':
-          const dayAfterTomorrow = new Date(tomorrow);
-          dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
-          filteredSessions = filteredSessions.filter(session => {
-            const sessionDate = new Date(session.start_at);
-            return sessionDate >= tomorrow && sessionDate < dayAfterTomorrow;
-          });
-          break;
-        case 'this_week':
-          const weekStart = new Date(today);
-          weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-          const weekEnd = new Date(weekStart);
-          weekEnd.setDate(weekEnd.getDate() + 7);
-          filteredSessions = filteredSessions.filter(session => {
-            const sessionDate = new Date(session.start_at);
-            return sessionDate >= weekStart && sessionDate < weekEnd;
-          });
-          break;
-        case 'next_week':
-          const nextWeekStart = new Date(today);
-          nextWeekStart.setDate(nextWeekStart.getDate() + 7 - nextWeekStart.getDay());
-          const nextWeekEnd = new Date(nextWeekStart);
-          nextWeekEnd.setDate(nextWeekEnd.getDate() + 7);
-          filteredSessions = filteredSessions.filter(session => {
-            const sessionDate = new Date(session.start_at);
-            return sessionDate >= nextWeekStart && sessionDate < nextWeekEnd;
-          });
-          break;
-      }
-    }
-
+    // Apply additional filters that aren't in the repo yet
+    let filteredItems = items;
     if (filters.status) {
-      filteredSessions = filteredSessions.filter(session =>
-        session.status === filters.status
-      );
+      filteredItems = filteredItems.filter(session => session.status === filters.status);
     }
-
-    if (filters.client_id) {
-      filteredSessions = filteredSessions.filter(session =>
-        session.client_id === filters.client_id
-      );
-    }
-
-    // Apply limit
-    const limit = filters.limit || 20;
-    const limitedSessions = filteredSessions.slice(0, limit);
 
     res.json({
       success: true,
-      data: limitedSessions
+      data: filteredItems
     });
   } catch (error) {
     logger.error('Error getting sessions:', error);
@@ -128,7 +41,8 @@ export const getSession = async (req: Request, res: Response) => {
     const { id } = req.params;
     logger.info('Getting session', { userId: req.user?.id, sessionId: id });
 
-    const session = mockSessions.find(s => s.id === id);
+    const repo = await getRepo();
+    const session = await repo.getSession(id);
 
     if (!session) {
       return res.status(404).json({
@@ -156,16 +70,11 @@ export const getSession = async (req: Request, res: Response) => {
 
 export const createSession = async (req: Request, res: Response) => {
   try {
-    const sessionData = req.body as CreateSession;
+    const sessionData = req.body as any;
     logger.info('Creating session', { userId: req.user?.id, sessionData });
 
-    const newSession: Session = {
-      id: uuidv4(),
-      ...sessionData,
-      join_url: null
-    };
-
-    mockSessions.push(newSession);
+    const repo = await getRepo();
+    const newSession = await repo.createSession(sessionData as any);
 
     res.status(201).json({
       success: true,
@@ -185,12 +94,13 @@ export const createSession = async (req: Request, res: Response) => {
 export const updateSession = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const updateData = req.body as UpdateSession;
+    const updateData = req.body as any;
     logger.info('Updating session', { userId: req.user?.id, sessionId: id, updateData });
 
-    const sessionIndex = mockSessions.findIndex(s => s.id === id);
+    const repo = await getRepo();
+    const session = await repo.getSession(id);
 
-    if (sessionIndex === -1) {
+    if (!session) {
       return res.status(404).json({
         error: {
           code: 'NOT_FOUND',
@@ -199,14 +109,11 @@ export const updateSession = async (req: Request, res: Response) => {
       });
     }
 
-    mockSessions[sessionIndex] = {
-      ...mockSessions[sessionIndex],
-      ...updateData
-    };
+    const updatedSession = await repo.updateSession(id, updateData as any);
 
     res.json({
       success: true,
-      data: mockSessions[sessionIndex]
+      data: updatedSession
     });
   } catch (error) {
     logger.error('Error updating session:', error);
@@ -224,7 +131,8 @@ export const joinSession = async (req: Request, res: Response) => {
     const { id } = req.params;
     logger.info('Joining session', { userId: req.user?.id, sessionId: id });
 
-    const session = mockSessions.find(s => s.id === id);
+    const repo = await getRepo();
+    const session = await repo.getSession(id);
 
     if (!session) {
       return res.status(404).json({
@@ -247,6 +155,7 @@ export const joinSession = async (req: Request, res: Response) => {
     // Generate join URL if not exists
     if (!session.join_url) {
       session.join_url = `https://meet.google.com/${Math.random().toString(36).substring(2, 15)}`;
+      await repo.updateSession(id, { join_url: session.join_url });
     }
 
     res.json({
